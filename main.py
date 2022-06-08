@@ -18,8 +18,8 @@ plate_template3  = 'assets/PlateTemplate3.png'
 barbell_template = 'assets/BarbellTemplate.png'
 
 # PATHS FOR SQUAT VIDEOS WITH GREEN FIDUCIAL
-normal_speed_green = 'assets/Green Square/NormalSpeed.mov'
-slow_speed_green   = 'assets/Green Square/SlowSpeed.mov'
+normal_speed_green = 'assets/Green Square/NormalSpeed.mp4'
+slow_speed_green   = 'assets/Green Square/SlowSpeed.mp4'
 green_fiducial     = 'assets/Green Square/templates/Green Fiducial.png'
 
 def analysis(path: str, template_path: str):
@@ -122,12 +122,13 @@ def play_video(path):
 
 def show_frame(path):
     vid = cv2.VideoCapture(path)
-    _, frame = vid.read()
+    ret, frame = vid.read()
+    if not ret: return
     cv2.imshow('Frame', frame)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 if __name__ == '__main__':
-    # analysis(normal_speed_green, template_path=green_fiducial)
     # play_video(normal_speed_green)
-    show_frame(normal_speed_green)
+    # show_frame(normal_speed_green)
+    analysis(normal_speed_green, template_path=green_fiducial)
