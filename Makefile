@@ -1,2 +1,2 @@
 all:
-	python3 -B main.py
+	python3 -B src/main.py
