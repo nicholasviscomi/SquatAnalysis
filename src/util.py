@@ -1,6 +1,7 @@
 from typing import List
 import cv2
 from cv2 import Mat
+import matplotlib.pyplot as plt
 
 def play_video(path):
     vid = cv2.VideoCapture(path)
@@ -29,3 +30,7 @@ def frames_from_video(video) -> List[Mat]:
         if ret == False: break
         frames.append(frame)
     return frames
+
+def display(img: Mat):
+    plt.imshow(img)
+    plt.show()
