@@ -2,6 +2,7 @@ from typing import List
 
 import cv2
 from cv2 import Mat
+from matplotlib.animation import ImageMagickBase
 
 import numpy as np
 
@@ -66,7 +67,7 @@ def green_isolated(bgr_img: Mat) -> Mat:
     rgb_img = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2RGB)
     hsv_img = cv2.cvtColor(rgb_img, cv2.COLOR_RGB2HSV)
 
-    mask = cv2.inRange(hsv_img, (50,110,105), (65,125,120)) # this seems to be the best range
+    mask = cv2.inRange(hsv_img, (40,100,95), (75,135,130)) # this seems to be the best range
     result = cv2.bitwise_and(rgb_img, rgb_img, mask=mask) # mashes the 2 images together
 
     return result
@@ -116,6 +117,7 @@ def track_green_fiducial(path: str, template_path: str) -> List[List]:
     cv2.destroyAllWindows()
     return points
 
+#doesn't work because there are some random pixels that get caught first
 def track_first_green_pixel(path: str) -> List[List]:
     vid = cv2.VideoCapture(path)
     if vid.isOpened() == False:
@@ -133,7 +135,7 @@ def track_first_green_pixel(path: str) -> List[List]:
         frame = green_isolated(frame)
         # util.display(frame)
 
-        if num_frame % 10 != 0: 
+        if num_frame % 5 != 0: 
             # reduce frame rate to lessen number of computations done
             num_frame += 1
             continue
@@ -146,16 +148,24 @@ def track_first_green_pixel(path: str) -> List[List]:
 
         starting_x, starting_y = 0,0 
         hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        for i,row in enumerate(hsv_frame):
-            for j,pixel in enumerate(row):
-                if pixel[0] != 0: # because of the green isolation, everything else is (0,0,0)
-                    print(f"Frame #{num_frame}: non-black pixel @ row {i}, col {j}")
-                    cv2.circle(frame, center=(j, i), radius=5, color=(255,255,255), thickness=-1)
+        for y in range(starting_y, len(hsv_frame)):
+            for x in range(starting_x, len(hsv_frame[0])):
+                # because of the green isolation, everything else is (0,0,0)
+                # find first pixel with saturation greater than 100
+                if hsv_frame[y][x][1] >= 100: 
+                    print(f"Frame #{num_frame}: non-black pixel @ row {y}, col {x}")
+                    cv2.circle(frame, center=(x, y), radius=5, color=(255,255,255), thickness=-1)
                     cv2.imshow('Frame', frame)
                     if cv2.waitKey(1) == ord('q'):
                         return tracking_points
 
-                    tracking_points.append([i, j])
+                    tracking_points.append([y, x])
+
+                    # gives the next iteration an idea of where to start
+                    if y > 200:
+                        starting_y = y - 100
+                    if x > 200:
+                        starting_x = x - 100
                     break
             else:
                 # once the inner for loop is exited, this will run
@@ -167,6 +177,31 @@ def track_first_green_pixel(path: str) -> List[List]:
 
     return tracking_points
 
+#doesn't work
+def circle_detection():
+    src = cv2.imread(normal_green_frame)
+    gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
+    gray = cv2.medianBlur(gray, 5)
+    rows = gray.shape[0]
+    circles = cv2.HoughCircles(
+        gray, cv2.HOUGH_GRADIENT, 1, rows / 8,
+        param1=200, param2=100, minRadius=0, maxRadius=0
+    )
+
+    if circles is not None:
+        circles = np.uint16(np.around(circles))
+        for i in circles[0, :]:
+            center = (i[0], i[1])
+            # circle center
+            cv2.circle(src, center, 1, (255, 255, 255), 5)
+            # circle outline
+            radius = i[2]
+            cv2.circle(src, center, radius, (255, 255, 255), 5)
+
+    cv2.imshow("detected circles", src)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
 if __name__ == '__main__':
     # util.show_frame(normal_speed_green)
     
@@ -174,15 +209,7 @@ if __name__ == '__main__':
     # util.play_video(normal_speed_green)
     # track_green_fiducial(normal_speed_green, bigger_green_fiducial)
 
-    # points = track_green_fiducial(normal_speed_green, bigger_green_fiducial)
-    # x_vals, y_vals = map(list, zip(*points)) # https://stackoverflow.com/questions/68783326/unpack-list-of-list-python
-    # plt.plot(x_vals, y_vals)
-    # plt.show()
-
-    points = track_first_green_pixel(normal_speed_green)
-    row_vals, column_vals = map(list, zip(*points)) # https://stackoverflow.com/questions/68783326/unpack-list-of-list-python
-    plt.plot(column_vals, row_vals)
-    plt.show()
+    
     
 
 # row_val [856, 858, 852, 860, 854, 858, 916, 1046, 1257, 1068, 1068, 1068, 1068, 1068, 1068, 1068, 1068, 1068, 1068, 1068, 1068, 886, 858, 856, 876, 882, 898, 899]
