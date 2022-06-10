@@ -1,8 +1,8 @@
-from typing import List
+from re import template
+from typing import List, Tuple
 
 import cv2
 from cv2 import Mat
-from matplotlib.animation import ImageMagickBase
 
 import numpy as np
 
@@ -26,12 +26,22 @@ plate_template2  = 'assets/PlateTemplate2.png'
 plate_template3  = 'assets/PlateTemplate3.png'
 barbell_template = 'assets/BarbellTemplate.png'
 
-# PATHS FOR SQUAT VIDEOS WITH GREEN FIDUCIAL
+# PATHS FOR SQUAT VIDEOS WITH GREEN SQUARE FIDUCIAL
 normal_speed_green    = 'assets/Green Square/NormalSpeed.mp4'
 slow_speed_green      = 'assets/Green Square/SlowSpeed.mp4'
 green_fiducial        = 'assets/Green Square/templates/Green Fiducial.png'
 bigger_green_fiducial = 'assets/Green Square/templates/Bigger Green Fiducial.png'
 normal_green_frame    = 'assets/Green Square/NormalSpeedFrame.png'
+lower_square_green = (40,100,95)
+upper_square_green = (75,135,130)
+
+# PATHS FOR SQUAT VIDEOS WITH GREEN CIRCLE FIDUCIAL
+green_circle_video       = 'assets/Green Circle/GreenCircle.mp4'
+circle_template          = 'assets/Green Circle/templates/CircleTemplate.png'
+isolated_circle_temlpate = 'assets/Green Circle/templates/IsolatedCircle.png'
+lower_circle_green = (60, 110, 140)
+upper_circle_green = (80, 140, 170)
+
 
 def analysis(path: str, template_path: str):
     vid_capture = cv2.VideoCapture(path)
@@ -63,11 +73,11 @@ def analysis(path: str, template_path: str):
     # ]
     frames = util.frames_from_video(vid_capture)
         
-def green_isolated(bgr_img: Mat) -> Mat:
+def color_isolated(bgr_img: Mat, lower_color: Tuple, upper_color: Tuple) -> Mat:
     rgb_img = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2RGB)
     hsv_img = cv2.cvtColor(rgb_img, cv2.COLOR_RGB2HSV)
 
-    mask = cv2.inRange(hsv_img, (40,100,95), (75,135,130)) # this seems to be the best range
+    mask = cv2.inRange(hsv_img, lower_color, upper_color) 
     result = cv2.bitwise_and(rgb_img, rgb_img, mask=mask) # mashes the 2 images together
 
     return result
@@ -96,19 +106,20 @@ def track_green_fiducial(path: str, template_path: str) -> List[List]:
         # get frame and template ready
         ret, frame = vid_capture.read()
         if not ret: break
-        frame = green_isolated(frame)
+        original = frame
+        frame = color_isolated(frame, lower_square_green, upper_square_green)
 
         # match it and draw the rectangle
         match = cv2.matchTemplate(frame, template, method) # for this, cv2.TM_CCORR worked best
         _, _, _, max_loc = cv2.minMaxLoc(match)
         cv2.rectangle(
-            frame, max_loc, 
+            original, max_loc, 
             (max_loc[0] + t_width, max_loc[1] + t_height),
             color=(255,255,255),
             thickness=5
         )
         points.append([max_loc[0], max_loc[1]])
-        cv2.imshow('Frame', frame)
+        cv2.imshow('Frame', original)
         i += 1
         if cv2.waitKey(1) == ord('q'):
             break
@@ -132,7 +143,7 @@ def track_first_green_pixel(path: str) -> List[List]:
         if ret == False: 
             print("No more frames to retrieve")
             break
-        frame = green_isolated(frame)
+        frame = color_isolated(frame, lower_square_green, upper_square_green)
         # util.display(frame)
 
         if num_frame % 5 != 0: 
@@ -178,39 +189,27 @@ def track_first_green_pixel(path: str) -> List[List]:
     return tracking_points
 
 #doesn't work
-def circle_detection():
-    src = cv2.imread(normal_green_frame)
-    gray = cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
-    gray = cv2.medianBlur(gray, 5)
-    rows = gray.shape[0]
-    circles = cv2.HoughCircles(
-        gray, cv2.HOUGH_GRADIENT, 1, rows / 8,
-        param1=200, param2=100, minRadius=0, maxRadius=0
-    )
+def track_circle_fiducial(path: str, template_path: str):
+    
+    template = cv2.imread(template_path)
+    # template = color_isolated(template, lower_circle_green, upper_circle_green)
+    template = cv2.cvtColor(template, cv2.COLOR_BGR2HSV)
 
-    if circles is not None:
-        circles = np.uint16(np.around(circles))
-        for i in circles[0, :]:
-            center = (i[0], i[1])
-            # circle center
-            cv2.circle(src, center, 1, (255, 255, 255), 5)
-            # circle outline
-            radius = i[2]
-            cv2.circle(src, center, radius, (255, 255, 255), 5)
+    vid = cv2.VideoCapture(path)
+    while vid.isOpened():
+        success, frame = vid.read()
+        if not success: break
 
-    cv2.imshow("detected circles", src)
-    cv2.waitKey(0)
+        frame = color_isolated(frame, lower_circle_green, upper_circle_green)
+
+        # try using template matching on the isolated green circle
+
+        cv2.imshow('Frame', frame)
+        cv2.waitKey(0)
+        break
+            # if cv2.waitKey(1) == ord('q'):
+            #     break
     cv2.destroyAllWindows()
 
 if __name__ == '__main__':
-    # util.show_frame(normal_speed_green)
-    
-    # analysis(normal_speed_green, template_path=green_fiducial)
-    # util.play_video(normal_speed_green)
-    # track_green_fiducial(normal_speed_green, bigger_green_fiducial)
-
-    
-    
-
-# row_val [856, 858, 852, 860, 854, 858, 916, 1046, 1257, 1068, 1068, 1068, 1068, 1068, 1068, 1068, 1068, 1068, 1068, 1068, 1068, 886, 858, 856, 876, 882, 898, 899]
-# column_val [376, 378, 420, 434, 438, 444, 435, 460, 463, 1255, 1255, 1253, 1252, 1246, 1246, 1246, 1247, 1247, 1246, 1246, 1247, 407, 422, 442, 448, 454, 460, 466]
+    track_green_fiducial(normal_speed_green, bigger_green_fiducial)

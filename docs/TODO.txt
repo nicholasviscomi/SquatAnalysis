@@ -1,0 +1,2 @@
+[ ] use the track_green_fidcucial function 
+    but with the green circle video
