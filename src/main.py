@@ -41,8 +41,8 @@ green_circle_frame       = 'assets/Green Circle/GreenCircleFrame.png'
 circle_template          = 'assets/Green Circle/templates/CircleTemplate.png'
 circle_template2         = 'assets/Green Circle/templates/CircleTemplate2.png'
 isolated_circle_temlpate = 'assets/Green Circle/templates/IsolatedCircle.png'
-lower_circle_green = (55, 105, 135)
-upper_circle_green = (85, 145, 175)
+lower_circle_green = (50, 100, 130)
+upper_circle_green = (90, 150, 180)
 
 
 def analysis(path: str, template_path: str):
@@ -80,79 +80,55 @@ def color_isolated(bgr_img: Mat, lower_color: Tuple, upper_color: Tuple) -> Mat:
     hsv_img = cv2.cvtColor(rgb_img, cv2.COLOR_RGB2HSV)
 
     mask = cv2.inRange(hsv_img, lower_color, upper_color) 
-    result = cv2.bitwise_and(rgb_img, rgb_img, mask=mask) # mashes the 2 images together
+    return mask
 
-    return result
-
-def track_green_fiducial(path: str, template_path: str, 
-                        lower_color: Tuple[int, int, int], upper_color: Tuple[int, int, int]) -> List[List]:
-    # get video strem and template set up
-    vid_capture = cv2.VideoCapture(path)
-
-    if (vid_capture.isOpened() == False):
-        print("Error opening the video file")
-        exit(0)
-
+def track_green_fiducial(
+    path: str, lower_color: Tuple[int, int, int], upper_color: Tuple[int, int, int]
+) -> List[List]:
     points = []
     
-    template = cv2.cvtColor(cv2.imread(template_path), cv2.COLOR_BGR2RGB)
-    t_width, t_height, _ = template.shape   
-    
-    method = cv2.TM_CCORR
-
-    i = 0
-    while vid_capture.isOpened:
-        if i % 10 != 0: 
+    vid = cv2.VideoCapture(path)
+    i = 0 
+    while vid.isOpened():
+        if i % 10 != 0:
             i += 1
             continue
+        
+        success, frame = vid.read()
+        if not success: break
+        
+        mask = color_isolated(frame, lower_color, upper_color)
 
-        # get frame and template ready
-        ret, frame = vid_capture.read()
-        if not ret: break
-        original = frame
-        frame = color_isolated(frame, lower_color, upper_color)
+        edged = cv2.Canny(mask, 100, 200)
+        items = cv2.findContours(edged, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours = imutils.grab_contours(items)
 
-        # match it and draw the rectangle
-        match = cv2.matchTemplate(frame, template, method) # for this, cv2.TM_CCORR worked best
-        _, _, _, max_loc = cv2.minMaxLoc(match)
-        cv2.rectangle(
-            original, max_loc, 
-            (max_loc[0] + t_width, max_loc[1] + t_height),
-            color=(255,255,255),
-            thickness=5
-        )
-        points.append([max_loc[0], max_loc[1]])
-        cv2.imshow('Frame', original)
+        center = None
+
+        if len(contours) > 0:
+		# find the largest contour in the mask, then use it to compute 
+        # the minimum enclosing circle and its center
+            c = max(contours, key=cv2.contourArea)
+            ((x, y), radius) = cv2.minEnclosingCircle(c)
+            center = (int(x), int(y))
+            # only proceed if the radius meets a minimum size
+            if radius > 10:
+                # draw the circle and centroid on the frame,
+                cv2.circle(frame, center, int(radius), (255, 255, 255), 10)
+                cv2.circle(frame, center, radius=10, color=(255, 255, 255), thickness=-1)
+
+                points.append([x, y])
+
+        cv2.imshow('Contours', frame)
         i += 1
         if cv2.waitKey(1) == ord('q'):
             break
-    
-    vid_capture.release()
     cv2.destroyAllWindows()
     return points
     
 if __name__ == '__main__':
-    # points = track_green_fiducial (
-    #     green_circle_video, isolated_circle_temlpate, 
-    #     lower_circle_green, upper_circle_green
-    # )
+    points = track_green_fiducial (
+        green_circle_video, lower_circle_green, upper_circle_green
+    )
 
-    vid = cv2.VideoCapture(green_circle_video)
-
-    while vid.isOpened():
-        success, frame = vid.read()
-        mask = color_isolated(frame, lower_circle_green, upper_circle_green)
-        bin_mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
-
-        edged = cv2.Canny(bin_mask, 30, 200)
-        contours, hierarchy = cv2.findContours(
-            edged, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
-        )
-
-        cv2.drawContours(frame, contours, -1, (0, 0, 0), 10)
-        cv2.imshow('Contours', frame)
-
-        if cv2.waitKey(1) == ord('q'):
-            break
-        cv2.destroyAllWindows()
-    # calc.analyze_points([[0,0]])
+    calc.analyze_points(points)
