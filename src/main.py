@@ -10,7 +10,7 @@ from matplotlib import colors
 
 import util
 import calc
-
+import imutils
 
 # have the user input the template, aka the barbell
 # track that template through every frame of the video
@@ -37,8 +37,9 @@ upper_square_green = (75,135,130)
 
 # PATHS FOR SQUAT VIDEOS WITH GREEN CIRCLE FIDUCIAL
 green_circle_video       = 'assets/Green Circle/GreenCircle.mp4'
+green_circle_frame       = 'assets/Green Circle/GreenCircleFrame.png'
 circle_template          = 'assets/Green Circle/templates/CircleTemplate.png'
-circle_template2          = 'assets/Green Circle/templates/CircleTemplate2.png'
+circle_template2         = 'assets/Green Circle/templates/CircleTemplate2.png'
 isolated_circle_temlpate = 'assets/Green Circle/templates/IsolatedCircle.png'
 lower_circle_green = (55, 105, 135)
 upper_circle_green = (85, 145, 175)
@@ -136,4 +137,22 @@ if __name__ == '__main__':
     #     lower_circle_green, upper_circle_green
     # )
 
-    calc.analyze_points([[0,0]])
+    vid = cv2.VideoCapture(green_circle_video)
+
+    while vid.isOpened():
+        success, frame = vid.read()
+        mask = color_isolated(frame, lower_circle_green, upper_circle_green)
+        bin_mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+
+        edged = cv2.Canny(bin_mask, 30, 200)
+        contours, hierarchy = cv2.findContours(
+            edged, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE
+        )
+
+        cv2.drawContours(frame, contours, -1, (0, 0, 0), 10)
+        cv2.imshow('Contours', frame)
+
+        if cv2.waitKey(1) == ord('q'):
+            break
+        cv2.destroyAllWindows()
+    # calc.analyze_points([[0,0]])
