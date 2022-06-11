@@ -1,5 +1,3 @@
-import imghdr
-from re import template
 from typing import List, Tuple
 
 import cv2
@@ -11,6 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib import colors
 
 import util
+import calc
 
 
 # have the user input the template, aka the barbell
@@ -132,7 +131,9 @@ def track_green_fiducial(path: str, template_path: str,
     return points
     
 if __name__ == '__main__':
-    track_green_fiducial (
-        green_circle_video, isolated_circle_temlpate, 
-        lower_circle_green, upper_circle_green
-    )
+    # points = track_green_fiducial (
+    #     green_circle_video, isolated_circle_temlpate, 
+    #     lower_circle_green, upper_circle_green
+    # )
+
+    calc.analyze_points([[0,0]])

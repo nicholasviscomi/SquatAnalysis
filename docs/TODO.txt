@@ -1,2 +1,4 @@
-[ ] use the track_green_fidcucial function 
-    but with the green circle video
+[x] use the track_green_fidcucial function but with the green circle video
+
+It feels like a lot of the functions aren't doing what I want.
+[ ] Make your own function that finds the green square/circle
