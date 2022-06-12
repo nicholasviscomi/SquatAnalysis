@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 import cv2
 from cv2 import Mat
@@ -51,25 +51,30 @@ def color_isolated(bgr_img: Mat, lower_color: Tuple, upper_color: Tuple) -> Mat:
     mask = cv2.inRange(hsv_img, lower_color, upper_color) 
     return mask
 
-def track_green_fiducial(
-    path: str, lower_color: Tuple[int, int, int], upper_color: Tuple[int, int, int]
-) -> Tuple[List[List], int, int]:
-    points = []
+# returns dictionary where keys are the time values and the values are the center points of the circle
+def track_green_fiducial( path: str, lower_color: Tuple[int, int, int], upper_color: Tuple[int, int, int]
+) -> Dict[np.signedinteger, Tuple[int, int]]:
+    points = {}
     
     vid = cv2.VideoCapture(path)
-    # Get frame rate information
+
     fps = int(vid.get(5))
     print("Frame Rate : ", fps, "frames per second") 
-
-    # Get frame count
     frame_count = vid.get(7)
     print("Frame count : ", frame_count)
+
+    # keep track of the time passed at each frame
+    vid_length = frame_count / fps
+    seconds_per_frame = vid_length / frame_count
+    time_vals = np.arange(0, vid_length, seconds_per_frame)
 
     i = 0
     while vid.isOpened():
         success, frame = vid.read()
         if not success: break
         
+        curr_time = time_vals[i]
+
         mask = color_isolated(frame, lower_color, upper_color)
 
         edged = cv2.Canny(mask, 100, 200)
@@ -92,7 +97,7 @@ def track_green_fiducial(
                 cv2.circle(frame, center, int(radius), (255, 255, 255), 10)
                 cv2.circle(frame, center, radius=10, color=(255, 255, 255), thickness=-1)
 
-                points.append([x, y])
+                points[curr_time] = (x, y)
 
         cv2.imshow('Contours', frame)
         i += 1
@@ -100,11 +105,11 @@ def track_green_fiducial(
             break
     print(f"num frames analyzed: {i}")
     cv2.destroyAllWindows()
-    return points, fps, frame_count
+    return points
     
 if __name__ == '__main__':
-    points, fps, nframes = track_green_fiducial (
+    point_dict = track_green_fiducial (
         green_circle_video, lower_circle_green, upper_circle_green
     )
 
-    calc.analyze_points(points, fps, nframes)
+    calc.analyze_points(point_dict)
