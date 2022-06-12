@@ -43,37 +43,6 @@ circle_template2         = 'assets/Green Circle/templates/CircleTemplate2.png'
 isolated_circle_temlpate = 'assets/Green Circle/templates/IsolatedCircle.png'
 lower_circle_green = (50, 100, 130)
 upper_circle_green = (90, 150, 180)
-
-
-def analysis(path: str, template_path: str):
-    vid_capture = cv2.VideoCapture(path)
-
-    if (vid_capture.isOpened() == False):
-        print("Error opening the video file")
-        exit(0)
-    
-    # Get frame rate information
-    fps = int(vid_capture.get(5))
-    print("Frame Rate : ", fps, "frames per second") 
-
-    # Get frame count
-    frame_count = vid_capture.get(7)
-    print("Frame count : ", frame_count)
-
-    # methods = [
-    #     cv2.TM_CCOEFF, cv2.TM_CCOEFF_NORMED, # best ones by far
-    #     cv2.TM_CCORR, cv2.TM_CCORR_NORMED,
-    #     cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED
-    # ]
-    # colors = [
-    #     (255,255,255),
-    #     (0,0,0),
-    #     (255,0,0),
-    #     (0,255,0),
-    #     (0,0,255),
-    #     (255,255,0),
-    # ]
-    frames = util.frames_from_video(vid_capture)
         
 def color_isolated(bgr_img: Mat, lower_color: Tuple, upper_color: Tuple) -> Mat:
     rgb_img = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2RGB)
@@ -84,16 +53,20 @@ def color_isolated(bgr_img: Mat, lower_color: Tuple, upper_color: Tuple) -> Mat:
 
 def track_green_fiducial(
     path: str, lower_color: Tuple[int, int, int], upper_color: Tuple[int, int, int]
-) -> List[List]:
+) -> Tuple[List[List], int, int]:
     points = []
     
     vid = cv2.VideoCapture(path)
-    i = 0 
+    # Get frame rate information
+    fps = int(vid.get(5))
+    print("Frame Rate : ", fps, "frames per second") 
+
+    # Get frame count
+    frame_count = vid.get(7)
+    print("Frame count : ", frame_count)
+
+    i = 0
     while vid.isOpened():
-        if i % 10 != 0:
-            i += 1
-            continue
-        
         success, frame = vid.read()
         if not success: break
         
@@ -111,9 +84,11 @@ def track_green_fiducial(
             c = max(contours, key=cv2.contourArea)
             ((x, y), radius) = cv2.minEnclosingCircle(c)
             center = (int(x), int(y))
-            # only proceed if the radius meets a minimum size
-            if radius > 10:
-                # draw the circle and centroid on the frame,
+            # From testing, the correct raidus is around 135
+            #   Acceptable range = 125-150
+            if 125 <= radius and radius <= 150:
+                # this block greatly increases the accuracy
+                # it either draws the correct circle or nothing :)
                 cv2.circle(frame, center, int(radius), (255, 255, 255), 10)
                 cv2.circle(frame, center, radius=10, color=(255, 255, 255), thickness=-1)
 
@@ -123,12 +98,13 @@ def track_green_fiducial(
         i += 1
         if cv2.waitKey(1) == ord('q'):
             break
+    print(f"num frames analyzed: {i}")
     cv2.destroyAllWindows()
-    return points
+    return points, fps, frame_count
     
 if __name__ == '__main__':
-    points = track_green_fiducial (
+    points, fps, nframes = track_green_fiducial (
         green_circle_video, lower_circle_green, upper_circle_green
     )
 
-    calc.analyze_points(points)
+    calc.analyze_points(points, fps, nframes)

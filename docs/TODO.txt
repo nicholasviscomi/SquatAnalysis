@@ -1,6 +1,8 @@
 [x] use the track_green_fidcucial function but with the green circle video
+[x] Alter the contours function to find the circle
+[ ] Use a higher degree line of best fit
 
-It feels like a lot of the functions aren't doing what I want.
-[ ] Make your own function that finds the green square/circle
-
-[ ] Alter the contours function to find the circle
+[ ] Need to keep track of where the center of where
+    the circle is at a specific time. Sometimes no
+    circle is found so there will be gaps at some
+    times. Do this while finding the center point

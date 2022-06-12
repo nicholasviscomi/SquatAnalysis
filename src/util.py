@@ -34,3 +34,9 @@ def frames_from_video(video) -> List[Mat]:
 def display(img: Mat):
     plt.imshow(img)
     plt.show()
+
+def get_frame_count(vid_capture) -> int:
+    return vid_capture.get(7)
+
+def get_frame_rate(vid_capture) -> int:
+    return int(vid_capture.get(5))
