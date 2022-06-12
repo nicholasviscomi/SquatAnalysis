@@ -111,5 +111,28 @@ if __name__ == '__main__':
     point_dict = track_green_fiducial (
         green_circle_video, lower_circle_green, upper_circle_green
     )
+    
+    y_vals = []
+    time_vals = []
+    for key, val in point_dict.items():
+        if key < 0.4 or key > 3: continue
+        time_vals.append(key)
+        y_vals.append(val[1])
+    
+    # graph full results
+    calc.graph_calculus(y_vals, time_vals)
+    
+    # graph ascent (from start to highest y value aka deepst pat of squat)
+    max_y_index = y_vals.index(max(y_vals))
 
-    calc.analyze_points(point_dict)
+    y_ascent = y_vals[0 : max_y_index]
+    t_ascent = time_vals[0 : max_y_index]
+
+    calc.graph_calculus(y_ascent, t_ascent)
+
+    # graph descent (from highest y value aka deepst pat of squat to end)
+    y_descent = y_vals[max_y_index :]
+    t_descent = time_vals[max_y_index : ]
+
+    calc.graph_calculus(y_descent, t_descent)
+    

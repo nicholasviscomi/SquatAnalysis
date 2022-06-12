@@ -3,15 +3,7 @@ import matplotlib.pyplot as plt
 from typing import Any, List, Tuple, Dict
 import numpy as np
 
-def analyze_points(point_dict: Dict[np.signedinteger, Tuple[int, int]]):
-    x_vals, y_vals = [], []
-    time_vals = []
-    for key, val in point_dict.items():
-        if key < 0.4 or key > 3: continue
-        time_vals.append(key)
-        x_vals.append(val[0])
-        y_vals.append(val[1])
-
+def graph_calculus(y_vals: List, time_vals: List):
     y_disp = [y - y_vals[0] for y in y_vals]
 
     plt.xlabel("Time (seconds)")
