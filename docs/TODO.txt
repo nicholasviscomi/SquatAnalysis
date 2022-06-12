@@ -2,7 +2,9 @@
 [x] Alter the contours function to find the circle
 [ ] Use a higher degree line of best fit
 
-[ ] Need to keep track of where the center of where
+[x] Need to keep track of where the center of where
     the circle is at a specific time. Sometimes no
     circle is found so there will be gaps at some
     times. Do this while finding the center point
+
+[ ] Convert pixels to inches/meter/etc.
