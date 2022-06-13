@@ -94,8 +94,8 @@ def track_green_fiducial( path: str, lower_color: Tuple[int, int, int], upper_co
             if 125 <= radius and radius <= 150:
                 # this block greatly increases the accuracy
                 # it either draws the correct circle or nothing :)
-                cv2.circle(frame, center, int(radius), (255, 255, 255), 10)
-                cv2.circle(frame, center, radius=10, color=(255, 255, 255), thickness=-1)
+                cv2.circle(frame, center, int(radius), (255, 0, 0), 15)
+                cv2.circle(frame, center, radius=10, color=(0, 0, 0), thickness=-1)
 
                 points[curr_time] = (x, y)
 
@@ -134,6 +134,5 @@ if __name__ == '__main__':
     y_ascent = y_vals[max_y_index :]
     t_ascent = time_vals[max_y_index : ]
 
-    # Why reverse? 
     calc.graph_calculus(y_ascent, t_ascent, isAscending=True, title="Tracking a Barbell During the Ascent of a Squat")
     

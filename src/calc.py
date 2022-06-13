@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from typing import Any, List, Tuple, Dict
+from typing import List
 import numpy as np
 
 # @param y_vals --> the y value of the center of the circle enclosing the fiducial
@@ -12,9 +12,9 @@ def graph_calculus(y_vals: List, time_vals: List, isAscending: bool, title: str)
     # ~135 pixels = 2 inches (radius of real circle) ==> 67.5 pixels per real world inch
     ppi = 135/2
     y_disp = []
-    start_y = pixels_to_inches(y_vals[0], ppi)
+    start_y = pixels_to_meters(y_vals[0], ppi)
     for y in y_vals:
-        y = pixels_to_inches(y, ppi)
+        y = pixels_to_meters(y, ppi)
         if isAscending:
             y_disp.append(abs(y - start_y))
         else:
@@ -31,49 +31,58 @@ def graph_calculus(y_vals: List, time_vals: List, isAscending: bool, title: str)
     print(f"{a}x^2 + {b}x + {c}")
 
     lbf_vals = [ (a * (x**2) + (b * x) + c) for x in time_vals ]
-    plt.plot(time_vals, lbf_vals, color='black', label='Displacement (in)')
+    plt.plot(time_vals, lbf_vals, color='black', label='Displacement (m)')
     #----------------------------------------
 
     #----------------------------------------
     # velocity function (1st derivative)
     velocity_vals = [((2 * a * x) + b) for x in time_vals]
-    plt.plot(time_vals, velocity_vals, color='red', label='Velocity (in/s)')
+    plt.plot(time_vals, velocity_vals, color='red', label='Velocity (m/s)')
     #----------------------------------------
 
     #----------------------------------------
     # acceleration function (2nd derivative)
     acc_vals = [ 2 * a for _ in time_vals ]
-    plt.plot(time_vals, acc_vals, color='orange', label='Acceleration(in/s^2)')
+    plt.plot(time_vals, acc_vals, color='orange', label='Acceleration(m/s^2)')
     #----------------------------------------
+
+    if not isAscending:
+        # show graphs then exit
+        # the force/work/power output during the descent is irrelevant
+        plt.legend(loc='upper left')
+        plt.show()
+        return
 
     #----------------------------------------
     # force = mass * acceleration
-    # m = 95 / 2.2 # lbs --> kg
-    # acc = 2 * a
-    # force_vals = [ m * acc for _ in time_vals]
+    m = 95 / 2.2 # lbs --> kg
+    acc = 2 * a # convert from in/s^2 --> m/s^2
+    force = m * acc
 
-    # plt.subplot(1, 3, 2)
-    # plt.plot(time_vals, force_vals, color='purple', label='Force')
-    # #----------------------------------------
-
-    # #----------------------------------------
-    # # work = force * displacement
-    # force = m * acc
-
-    # max_y_index = y_disp.index(max(y_disp))
-    # # distance traveled from beginning to maximum
-    # dist_traveled = y_disp[max_y_index] - y_disp[0]
-
-    # if max_y_index < (len(y_disp) - 1):
-    #     # if there is more after the maximum, add it to the total
-    #     dist_traveled += y_disp[max_y_index] - y_disp[len(y_disp) - 1]
-
-    # work_vals = [ force * dist_traveled for _ in time_vals ]
-
-    # plt.subplot(1, 3, 3)
-    # plt.plot(time_vals, work_vals, color='brown', label='Work')
+    print(f"Force: {force} Newtons")
     #----------------------------------------
 
+    #----------------------------------------
+    # work = force * displacement
+    max_y_index = lbf_vals.index(max(lbf_vals))
+    min_y_index = lbf_vals.index(min(lbf_vals))
+    # distance traveled from top to bottom of squat
+    dist_traveled = lbf_vals[max_y_index] - lbf_vals[min_y_index]
+    print(f"Distance Traveled: {dist_traveled} meters")
+
+    work = force * dist_traveled
+
+    print(f"Work: {work} Joules")
+    #----------------------------------------
+
+    #----------------------------------------
+    # power = work / change in time
+    ds = time_vals[len(time_vals) - 1] - time_vals[0] # delta s
+    print(f"delta s: {ds} seconds")
+    power = work / ds
+
+    print(f"Power: {power} Watts")
+    #----------------------------------------
 
     plt.legend(loc='upper left')
     plt.show()
@@ -81,5 +90,6 @@ def graph_calculus(y_vals: List, time_vals: List, isAscending: bool, title: str)
 # @param n = number of pixels (the value being converted to inches)
 # @param ppn = pixels per inch: raidus of the drawn circle / radius of real circle in inches
 # returns value in inches
-def pixels_to_inches(n, ppi):
-    return n / ppi
+def pixels_to_meters(n, ppi):
+    return n / ppi * 0.0254
+
