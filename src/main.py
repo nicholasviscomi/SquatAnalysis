@@ -144,23 +144,23 @@ if __name__ == '__main__':
     )
     
     # graph descent (from start to highest y value aka deepst pat of squat)
-    # max_y_index = y_vals.index(max(y_vals))
+    max_y_index = y_vals.index(max(y_vals))
 
-    # y_descent = y_vals[0 : max_y_index]
-    # t_descent = time_vals[0 : max_y_index]
+    y_descent = y_vals[0 : max_y_index]
+    t_descent = time_vals[0 : max_y_index]
 
-    # calc.graph_calculus(
-    #     y_descent, t_descent, fiducial_radius=fiducial_radius,
-    #     isAscending=False, title="Tracking a Barbell During the Descent of a Squat"
-    # )
+    calc.graph_calculus(
+        y_descent, t_descent, fiducial_radius=fiducial_radius,
+        isAscending=False, title="Tracking a Barbell During the Descent of a Squat"
+    )
 
-    # # graph ascent (from highest y value aka deepst pat of squat to end)
-    # y_ascent = y_vals[max_y_index :]
-    # t_ascent = time_vals[max_y_index : ]
+    # graph ascent (from highest y value aka deepst pat of squat to end)
+    y_ascent = y_vals[max_y_index :]
+    t_ascent = time_vals[max_y_index : ]
 
-    # calc.graph_calculus(
-    #     y_ascent, t_ascent, fiducial_radius=fiducial_radius,
-    #     isAscending=True, title="Tracking a Barbell During the Ascent of a Squat"
-    # )
+    calc.graph_calculus(
+        y_ascent, t_ascent, fiducial_radius=fiducial_radius,
+        isAscending=True, title="Tracking a Barbell During the Ascent of a Squat"
+    )
     
     calc.check_barpath(x_vals, time_vals, fiducial_radius)
