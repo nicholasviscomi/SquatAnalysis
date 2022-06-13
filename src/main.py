@@ -117,34 +117,50 @@ def track_green_fiducial(
     return points
     
 if __name__ == '__main__':
-    point_dict = track_green_fiducial (
-        path=rowing_video, 
-        fiducial_radius=60,
-        lower_color=lower_rowing_green, 
-        upper_color=upper_rowing_green
-    )
+    path = green_circle_video
+    if path == green_circle_video:
+        lower_color = lower_circle_green
+        upper_color = upper_circle_green
+        fiducial_radius = 135
+    elif path == rowing_video:
+        lower_color = lower_rowing_green
+        upper_color = upper_rowing_green
+        fiducial_radius = 60
     
-    y_vals = []
+    point_dict = track_green_fiducial(path, fiducial_radius, lower_color, upper_color)
+    
+    x_vals, y_vals = [], []
     time_vals = []
     for key, val in point_dict.items():
-        # if key < 0.4 or key > 3: continue
+        if path == green_circle_video and (key < 0.4 or key > 3): continue
         time_vals.append(key)
+        x_vals.append(val[0])
         y_vals.append(val[1])
     
     # graph full results
-    calc.graph_calculus(y_vals, time_vals, isAscending=False, title="Tracking a Barbell During a Squat")
+    calc.graph_calculus(
+        y_vals, time_vals, fiducial_radius=fiducial_radius,
+        isAscending=False, title="Tracking a Barbell During a Squat"
+    )
     
     # graph descent (from start to highest y value aka deepst pat of squat)
-    max_y_index = y_vals.index(max(y_vals))
+    # max_y_index = y_vals.index(max(y_vals))
 
-    y_descent = y_vals[0 : max_y_index]
-    t_descent = time_vals[0 : max_y_index]
+    # y_descent = y_vals[0 : max_y_index]
+    # t_descent = time_vals[0 : max_y_index]
 
-    calc.graph_calculus(y_descent, t_descent, isAscending=False, title="Tracking a Barbell During the Descent of a Squat")
+    # calc.graph_calculus(
+    #     y_descent, t_descent, fiducial_radius=fiducial_radius,
+    #     isAscending=False, title="Tracking a Barbell During the Descent of a Squat"
+    # )
 
-    # graph ascent (from highest y value aka deepst pat of squat to end)
-    y_ascent = y_vals[max_y_index :]
-    t_ascent = time_vals[max_y_index : ]
+    # # graph ascent (from highest y value aka deepst pat of squat to end)
+    # y_ascent = y_vals[max_y_index :]
+    # t_ascent = time_vals[max_y_index : ]
 
-    calc.graph_calculus(y_ascent, t_ascent, isAscending=True, title="Tracking a Barbell During the Ascent of a Squat")
+    # calc.graph_calculus(
+    #     y_ascent, t_ascent, fiducial_radius=fiducial_radius,
+    #     isAscending=True, title="Tracking a Barbell During the Ascent of a Squat"
+    # )
     
+    calc.check_barpath(x_vals, time_vals, fiducial_radius)
