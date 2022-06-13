@@ -43,7 +43,13 @@ circle_template2         = 'assets/Green Circle/templates/CircleTemplate2.png'
 isolated_circle_temlpate = 'assets/Green Circle/templates/IsolatedCircle.png'
 lower_circle_green = (50, 100, 130)
 upper_circle_green = (90, 150, 180)
-        
+
+# Rowing video
+rowing_video = 'assets/Green Circle/Rowing.mp4'   
+lower_rowing_green = (40, 90, 90)
+upper_rowing_green = (70, 150, 140)
+
+
 def color_isolated(bgr_img: Mat, lower_color: Tuple, upper_color: Tuple) -> Mat:
     rgb_img = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2RGB)
     hsv_img = cv2.cvtColor(rgb_img, cv2.COLOR_RGB2HSV)
@@ -52,7 +58,9 @@ def color_isolated(bgr_img: Mat, lower_color: Tuple, upper_color: Tuple) -> Mat:
     return mask
 
 # returns dictionary where keys are the time values and the values are the center points of the circle
-def track_green_fiducial( path: str, lower_color: Tuple[int, int, int], upper_color: Tuple[int, int, int]
+def track_green_fiducial(
+    path: str, fiducial_radius: int,
+    lower_color: Tuple[int, int, int], upper_color: Tuple[int, int, int]
 ) -> Dict[np.signedinteger, Tuple[int, int]]:
     points = {}
     
@@ -72,7 +80,9 @@ def track_green_fiducial( path: str, lower_color: Tuple[int, int, int], upper_co
     while vid.isOpened():
         success, frame = vid.read()
         if not success: break
-        
+        if path == rowing_video:
+            frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
+
         curr_time = time_vals[i]
 
         mask = color_isolated(frame, lower_color, upper_color)
@@ -89,9 +99,8 @@ def track_green_fiducial( path: str, lower_color: Tuple[int, int, int], upper_co
             c = max(contours, key=cv2.contourArea)
             ((x, y), radius) = cv2.minEnclosingCircle(c)
             center = (int(x), int(y))
-            # From testing, the correct raidus is around 135
-            #   Acceptable range = 125-150
-            if 125 <= radius and radius <= 150:
+            
+            if fiducial_radius - 10 <= radius and radius <= fiducial_radius + 10:
                 # this block greatly increases the accuracy
                 # it either draws the correct circle or nothing :)
                 cv2.circle(frame, center, int(radius), (255, 0, 0), 15)
@@ -109,13 +118,16 @@ def track_green_fiducial( path: str, lower_color: Tuple[int, int, int], upper_co
     
 if __name__ == '__main__':
     point_dict = track_green_fiducial (
-        green_circle_video, lower_circle_green, upper_circle_green
+        path=rowing_video, 
+        fiducial_radius=60,
+        lower_color=lower_rowing_green, 
+        upper_color=upper_rowing_green
     )
     
     y_vals = []
     time_vals = []
     for key, val in point_dict.items():
-        if key < 0.4 or key > 3: continue
+        # if key < 0.4 or key > 3: continue
         time_vals.append(key)
         y_vals.append(val[1])
     
