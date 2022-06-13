@@ -120,19 +120,20 @@ if __name__ == '__main__':
         y_vals.append(val[1])
     
     # graph full results
-    calc.graph_calculus(y_vals, time_vals)
+    calc.graph_calculus(y_vals, time_vals, isAscending=False, title="Tracking a Barbell During a Squat")
     
-    # graph ascent (from start to highest y value aka deepst pat of squat)
+    # graph descent (from start to highest y value aka deepst pat of squat)
     max_y_index = y_vals.index(max(y_vals))
 
-    y_ascent = y_vals[0 : max_y_index]
-    t_ascent = time_vals[0 : max_y_index]
+    y_descent = y_vals[0 : max_y_index]
+    t_descent = time_vals[0 : max_y_index]
 
-    calc.graph_calculus(y_ascent, t_ascent)
+    calc.graph_calculus(y_descent, t_descent, isAscending=False, title="Tracking a Barbell During the Descent of a Squat")
 
-    # graph descent (from highest y value aka deepst pat of squat to end)
-    y_descent = y_vals[max_y_index :]
-    t_descent = time_vals[max_y_index : ]
+    # graph ascent (from highest y value aka deepst pat of squat to end)
+    y_ascent = y_vals[max_y_index :]
+    t_ascent = time_vals[max_y_index : ]
 
-    calc.graph_calculus(y_descent, t_descent)
+    # Why reverse? 
+    calc.graph_calculus(y_ascent, t_ascent, isAscending=True, title="Tracking a Barbell During the Ascent of a Squat")
     

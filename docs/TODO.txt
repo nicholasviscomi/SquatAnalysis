@@ -7,4 +7,4 @@
     circle is found so there will be gaps at some
     times. Do this while finding the center point
 
-[ ] Convert pixels to inches/meter/etc.
+[x] Convert pixels to inches/meter/etc.
