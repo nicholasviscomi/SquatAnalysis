@@ -1,3 +1,4 @@
+import sys
 from typing import Dict, List, Tuple
 
 import cv2
@@ -27,20 +28,20 @@ plate_template3  = 'assets/PlateTemplate3.png'
 barbell_template = 'assets/BarbellTemplate.png'
 
 # PATHS FOR SQUAT VIDEOS WITH GREEN SQUARE FIDUCIAL
-normal_speed_green    = 'assets/Green Square/NormalSpeed.mp4'
-slow_speed_green      = 'assets/Green Square/SlowSpeed.mp4'
-green_fiducial        = 'assets/Green Square/templates/Green Fiducial.png'
-bigger_green_fiducial = 'assets/Green Square/templates/Bigger Green Fiducial.png'
-normal_green_frame    = 'assets/Green Square/NormalSpeedFrame.png'
+normal_speed_green    = 'assets/Green-Square/NormalSpeed.mp4'
+slow_speed_green      = 'assets/Green-Square/SlowSpeed.mp4'
+green_fiducial        = 'assets/Green-Square/templates/Green Fiducial.png'
+bigger_green_fiducial = 'assets/Green-Square/templates/Bigger Green Fiducial.png'
+normal_green_frame    = 'assets/Green-Square/NormalSpeedFrame.png'
 lower_square_green = (40,100,95)
 upper_square_green = (75,135,130)
 
 # PATHS FOR SQUAT VIDEOS WITH GREEN CIRCLE FIDUCIAL
-green_circle_video       = 'assets/Green Circle/GreenCircle.mp4'
-green_circle_frame       = 'assets/Green Circle/GreenCircleFrame.png'
-circle_template          = 'assets/Green Circle/templates/CircleTemplate.png'
-circle_template2         = 'assets/Green Circle/templates/CircleTemplate2.png'
-isolated_circle_temlpate = 'assets/Green Circle/templates/IsolatedCircle.png'
+green_circle_video       = 'assets/Green-Circle/GreenCircle.mp4'
+green_circle_frame       = 'assets/Green-Circle/GreenCircleFrame.png'
+circle_template          = 'assets/Green-Circle/templates/CircleTemplate.png'
+circle_template2         = 'assets/Green-Circle/templates/CircleTemplate2.png'
+isolated_circle_temlpate = 'assets/Green-Circle/templates/IsolatedCircle.png'
 lower_circle_green = (50, 100, 130)
 upper_circle_green = (90, 150, 180)
 
@@ -115,8 +116,8 @@ def track_green_fiducial(
     print(f"num frames analyzed: {i}")
     cv2.destroyAllWindows()
     return points
-    
-if __name__ == '__main__':
+
+def test_local_video():
     path = green_circle_video
     if path == green_circle_video:
         lower_color = lower_circle_green
@@ -164,3 +165,65 @@ if __name__ == '__main__':
     )
     
     calc.check_barpath(x_vals, time_vals, fiducial_radius)
+
+# initialize the list of reference points and boolean indicating
+# whether cropping is being performed or not
+# refPt = []
+# cropping = False
+# def click_and_crop(event, x, y, flags, param):
+# 	# grab references to the global variables
+# 	global refPt, cropping
+# 	# if the left mouse button was clicked, record the starting
+# 	# (x, y) coordinates and indicate that cropping is being
+# 	# performed
+# 	if event == cv2.EVENT_LBUTTONDOWN:
+# 		refPt = [(x, y)]
+# 		cropping = True
+# 	# check to see if the left mouse button was released
+# 	elif event == cv2.EVENT_LBUTTONUP:
+# 		# record the ending (x, y) coordinates and indicate that
+# 		# the cropping operation is finished
+# 		refPt.append((x, y))
+# 		cropping = False
+# 		# draw a rectangle around the region of interest
+# 		cv2.rectangle(image, refPt[0], refPt[1], (255, 255, 255), 2)
+# 		cv2.imshow("image", image)
+
+if __name__ == '__main__':
+    # if len(sys.argv) != 2:
+    #     print("USAGE: python3 src/main.py <path/to/video/to/analyze>")
+    #     print("**Path cannot have spaces within**")
+    #     exit(1)
+
+    # path = sys.argv[1]
+    # print(f"Path: {path}")
+
+    # vid = cv2.VideoCapture(path)
+    # success, image = vid.read()
+    # if not success: exit(1)
+
+    # # load the image, clone it, and setup the mouse callback function
+    # clone = image.copy()
+    # cv2.namedWindow("image")
+    # cv2.setMouseCallback("image", click_and_crop)
+    # # keep looping until the 'q' key is pressed
+    # while True:
+    #     # display the image and wait for a keypress
+    #     cv2.imshow("image", image)
+    #     key = cv2.waitKey(1) & 0xFF
+    #     # if the 'r' key is pressed, reset the cropping region
+    #     if key == ord("r"):
+    #         image = clone.copy()
+    #     # if the 'c' key is pressed, break from the loop
+    #     elif key == ord("c"):
+    #         break
+    # # if there are two reference points, then crop the region of interest
+    # # from teh image and display it
+    #     roi = clone[reffPt[0][1]:refPt[1][1], refPt[0][0]:refPt[1][0]]
+    #     cv2.imshow("ROI", roi)
+    #     cv2.waitKey(0)
+    # # close all open windows
+    # cv2.destroyAllWindows()
+
+    
+    test_local_video()
